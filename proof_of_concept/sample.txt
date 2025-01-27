@@ -1,0 +1,15 @@
+
+    Necessity -> Determines whether a good’s demand is more likely to respond to a change in price
+        Necessary Goods -> Relatively Inelastic Demand, since even though prices rise consumers still need to consume those goods
+        Luxury  Goods -> Relatively Elastic Demand, since they are not necessary
+    Substitutes -> The amount of substitutes a good has can influence the elasticity
+        Several Substitutes -> Relatively Elastic Demand
+        Eg. Market for Bread -> Relatively Inelastic Demand, since there are less substitutes for bread
+    Addictiveness -> More addictive goods have Relatively Inelastic Demand, since consumers are addicted to them
+        Eg. Cigarettes -> Consumers continue demanding them, even if price increases
+    Proportion of Income Spent on the Good -> Influences consumers capability to afford the product, hence its demand
+        Smaller Proportion -> Relatively Inelastic Demand
+        Greater Proportion -> Relatively Elastic Demand
+    Durability of the Good -> A good’s duration determines how much consumers are willing to wait to buy another one
+        Longer Durability -> Relatively Elastic Demand
+    Peak and Off-Peak Demand -> During peak times, demand for tickets is Relatively Inelastic
