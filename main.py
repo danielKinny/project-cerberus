@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-
+from pdfParser import cleanText, extractText
 app = FastAPI()
 
 tokenizer = T5Tokenizer.from_pretrained("iarfmoose/t5-base-question-generator")
@@ -16,9 +16,13 @@ async def upload_file(file: UploadFile = File(...)):
         questions= []
         try:
 
-            context = await file.read()
-            text = context.decode("utf-8")
-            input_text = f"context: {text}"
+            file_location = f"temp/{file.filename}"
+            with open(file_location, "wb") as f:
+                f.write(await file.read())
+
+            extracted_text = extractText(file_location)
+            cleaned_text = " ".join(cleanText(page) for page in extracted_text)
+            input_text = f"context: {cleaned_text}"
 
             inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
             input_ids = inputs["input_ids"].squeeze(0)
