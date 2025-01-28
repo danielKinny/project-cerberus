@@ -37,7 +37,7 @@ async def upload_file(file: UploadFile = File(...)):
                 outputs = model.generate(
                     inputs["input_ids"],
                     max_length=64,
-                    num_return_sequences=5,
+                    num_return_sequences=3,
                     do_sample=True,
                     top_k=50,
                     top_p=0.9,
