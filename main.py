@@ -27,7 +27,7 @@ async def upload_file(file: UploadFile = File(...)):
 
             extracted_text = extractText(file_location)
             cleaned_text = " ".join(cleanText(page) for page in extracted_text)
-            #print(cleaned_text)
+         
 
             chunks = [cleaned_text[i : i + CHUNK_SIZE] for i in range(0, len(cleaned_text), CHUNK_SIZE)]          
 
@@ -35,7 +35,6 @@ async def upload_file(file: UploadFile = File(...)):
                 
                 chunk_tensor = tokenizer(f"context:{chunk}", max_length=512, truncation=True, padding=True, return_tensors="pt")
 
-                print(chunk)
 
                 outputs = model.generate(
                     chunk_tensor['input_ids'],
@@ -47,8 +46,7 @@ async def upload_file(file: UploadFile = File(...)):
                     temperature=1, 
                     )
                 
-                #print([tokenizer.decode(x) for x in chunk])
-                print(f"chunk {i} has been processed")
+                print(f"Chunk {i} has been processed...")
 
                 for output in outputs:
                     question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')
