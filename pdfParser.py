@@ -18,4 +18,5 @@ def cleanText(text):
 
     with open("testing.txt","w") as f:
         f.write(cleaned_text)
+        
     return cleaned_text

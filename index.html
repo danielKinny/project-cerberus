@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcard Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .file-input {
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: #3b82f6;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .flashcards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .flashcard {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .flashcard h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .flashcard p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Flashcard Generator</h1>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" class="file-input" accept=".pdf" />
+      <button type="submit" id="submitButton" class="btn">Generate Flashcards</button>
+    </form>
+    <div id="loadingMessage" style="display: none; text-align: center;">Generating flashcards, please wait...</div>
+    <div id="flashcards" class="flashcards"></div>
+  </div>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const submitButton = document.getElementById('submitButton');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const flashcardsContainer = document.getElementById('flashcards');
+
+    uploadForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!fileInput.files.length) {
+        alert('Please select a file before submitting.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      submitButton.disabled = true;
+      loadingMessage.style.display = 'block';
+      flashcardsContainer.innerHTML = '';
+
+      try {
+        const response = await fetch('http://localhost:8000/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to process the file.');
+        }
+
+        const data = await response.json();
+
+        if (data.questions) {
+          data.questions.forEach(([question, answer]) => {
+            const flashcard = document.createElement('div');
+            flashcard.className = 'flashcard';
+
+            const questionElement = document.createElement('h2');
+            questionElement.textContent = question;
+            flashcard.appendChild(questionElement);
+
+            const answerElement = document.createElement('p');
+            answerElement.textContent = answer;
+            flashcard.appendChild(answerElement);
+
+            flashcardsContainer.appendChild(flashcard);
+          });
+        } else {
+          alert('No questions were generated.');
+        }
+      } catch (error) {
+        console.error(error.message);
+        alert('There was an error processing the file.');
+      } finally {
+        submitButton.disabled = false;
+        loadingMessage.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
