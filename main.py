@@ -13,6 +13,7 @@ tokenizer = T5Tokenizer.from_pretrained(question_generation_model)
 model = T5ForConditionalGeneration.from_pretrained(question_generation_model)
 
 CHUNK_SIZE = 512
+MAX_QUESTIONS = 15
 
 @app.post("/upload")
 
@@ -26,19 +27,18 @@ async def upload_file(file: UploadFile = File(...)):
 
             extracted_text = extractText(file_location)
             cleaned_text = " ".join(cleanText(page) for page in extracted_text)
-            input_text = f"context: {cleaned_text}"
+            #print(cleaned_text)
 
-            inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
-            input_ids = inputs["input_ids"].squeeze(0)
+            chunks = [cleaned_text[i : i + CHUNK_SIZE] for i in range(0, len(cleaned_text), CHUNK_SIZE)]          
 
-            chunks = [input_ids[i : i + CHUNK_SIZE] for i in range(0, len(input_ids), CHUNK_SIZE)]
+            for i,chunk in enumerate(chunks):
+                
+                chunk_tensor = tokenizer(f"context:{chunk}", max_length=512, truncation=True, padding=True, return_tensors="pt")
 
-            for chunk in chunks:
-
-                chunk_tensor = torch.tensor(chunk).unsqueeze(0)
+                print(chunk)
 
                 outputs = model.generate(
-                    chunk_tensor,
+                    chunk_tensor['input_ids'],
                     max_length=64,
                     num_return_sequences=3,
                     do_sample=True,
@@ -46,15 +46,19 @@ async def upload_file(file: UploadFile = File(...)):
                     top_p=0.9,
                     temperature=1, 
                     )
+                
+                #print([tokenizer.decode(x) for x in chunk])
+                print(f"chunk {i} has been processed")
 
                 for output in outputs:
                     question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')
-                    answer = answering_pipeline(question=question, context=cleaned_text)
-                    questions.append([question,answer['answer'] ])
+                    answer = answering_pipeline(question=question, context=chunk)
+                    questions.append([question, answer['answer']])
                 
             return JSONResponse({"questions":questions})
 
         except Exception as e:
+            print(e)
             return JSONResponse({"error":str(e)}, status_code=500)
 
 if __name__ == "__main__":
