@@ -5,8 +5,8 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 from pdfParser import cleanText, extractText
 app = FastAPI()
 
-tokenizer = T5Tokenizer.from_pretrained("iarfmoose/t5-base-question-generator")
-model = T5ForConditionalGeneration.from_pretrained("iarfmoose/t5-base-question-generator")
+tokenizer = T5Tokenizer.from_pretrained("valhalla/t5-base-qg-hl")
+model = T5ForConditionalGeneration.from_pretrained("valhalla/t5-base-qg-hl")
 
 CHUNK_SIZE = 512
 
@@ -22,6 +22,7 @@ async def upload_file(file: UploadFile = File(...)):
 
             extracted_text = extractText(file_location)
             cleaned_text = " ".join(cleanText(page) for page in extracted_text)
+            print( cleaned_text )
             input_text = f"context: {cleaned_text}"
 
             inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
@@ -40,11 +41,11 @@ async def upload_file(file: UploadFile = File(...)):
                     do_sample=True,
                     top_k=50,
                     top_p=0.9,
-                    temperature=0.7, 
+                    temperature=1, 
                     )
 
                 for output in outputs:
-                    question = tokenizer.decode(output, skip_special_tokens=True)
+                    question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')
                     questions.append(question)
                 
             return JSONResponse({"questions":questions})
