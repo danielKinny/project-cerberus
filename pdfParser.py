@@ -14,6 +14,9 @@ def extractText(pdf_file: str):
 
 def cleanText(text):
     text = text.encode( 'utf-8', 'ignore').decode('utf-8')
-    cleaned_text = re.sub(r'[^a-zA-Z0-9\s.,!?\'"-]', '', text)
-    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+    cleaned_text = re.sub(r'-\s*\n|\s*\n\s*|[^a-zA-Z0-9\s.,!?\'"-]|\s+', ' ', text).strip()
+
+    with open("testing.txt","w") as f:
+        f.write(cleaned_text)
+        
     return cleaned_text
