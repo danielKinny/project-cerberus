@@ -1,12 +1,16 @@
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
 from pdfParser import cleanText, extractText
+import torch
+
 app = FastAPI()
 
-tokenizer = T5Tokenizer.from_pretrained("valhalla/t5-base-qg-hl")
-model = T5ForConditionalGeneration.from_pretrained("valhalla/t5-base-qg-hl")
+question_generation_model = "valhalla/t5-base-qg-hl"
+answering_pipeline = pipeline("question-answering", model="deepset/roberta-large-squad2")
+tokenizer = T5Tokenizer.from_pretrained(question_generation_model)
+model = T5ForConditionalGeneration.from_pretrained(question_generation_model)
 
 CHUNK_SIZE = 512
 
@@ -22,7 +26,6 @@ async def upload_file(file: UploadFile = File(...)):
 
             extracted_text = extractText(file_location)
             cleaned_text = " ".join(cleanText(page) for page in extracted_text)
-            print( cleaned_text )
             input_text = f"context: {cleaned_text}"
 
             inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
@@ -31,11 +34,11 @@ async def upload_file(file: UploadFile = File(...)):
             chunks = [input_ids[i : i + CHUNK_SIZE] for i in range(0, len(input_ids), CHUNK_SIZE)]
 
             for chunk in chunks:
-                inputs = {"input_ids":chunk.unsqueeze(0)}
 
+                chunk_tensor = torch.tensor(chunk).unsqueeze(0)
 
                 outputs = model.generate(
-                    inputs["input_ids"],
+                    chunk_tensor,
                     max_length=64,
                     num_return_sequences=3,
                     do_sample=True,
@@ -46,7 +49,8 @@ async def upload_file(file: UploadFile = File(...)):
 
                 for output in outputs:
                     question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')
-                    questions.append(question)
+                    answer = answering_pipeline(question=question, context=cleaned_text)
+                    questions.append([question,answer['answer'] ])
                 
             return JSONResponse({"questions":questions})
 
