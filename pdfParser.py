@@ -17,11 +17,3 @@ def cleanText(text):
     cleaned_text = re.sub(r'[^a-zA-Z0-9\s.,!?\'"-]', '', text)
     cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
     return cleaned_text
-
-if __name__ == '__main__':
-    extractedText = extractText('concepts\\Hassett - Summary.pdf')
-    
-    with open("concepts//sample.txt","a") as s:
-        
-        for text in extractedText:
-            s.write(cleanText(text) +" ")
