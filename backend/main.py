@@ -46,9 +46,9 @@ async def upload_file(file: UploadFile = File(...)):
                 outputs = model.generate(
                     chunk_tensor['input_ids'],
                     max_length=128,
-                    num_return_sequences=1,
+                    num_return_sequences=3,
                     do_sample=True,
-                    top_k=10,
+                    top_k=30,
                     top_p=0.95,
                     temperature=0.7,
                     no_repeat_ngram_size = 2
@@ -63,13 +63,13 @@ async def upload_file(file: UploadFile = File(...)):
                     answer = answering_pipeline(
                         question=question,
                         context=context_window,
-                        max_answer_len=100,
+                        max_answer_len=120,
                         handle_impossible_answers = True,
-                        top_k=5,
+                        top_k=30,
                         )
                     
                     for ans in answer:
-                        if ans['score'] > 0.45:
+                        if ans['score'] > 0.5:
                             questions.append([question, ans['answer']])
                     
             return JSONResponse({"questions":questions})

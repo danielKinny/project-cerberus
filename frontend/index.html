@@ -3,177 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Flashcards</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <title>PDF to Flashcards Converter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #ec4899;
-            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Quicksand', sans-serif;
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f0f4f8;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             padding: 2rem;
-            line-height: 1.6;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
-        .title {
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
             text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-section h1 {
+            color: #2d3436;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
             font-size: 2.5rem;
-            margin-bottom: 2rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: fadeIn 1s ease;
         }
 
-        .upload-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-bottom: 2rem;
-            transition: transform 0.3s ease;
+        .file-input-container {
+            position: relative;
+            margin: 1.5rem 0;
         }
 
-        .upload-container:hover {
-            transform: translateY(-2px);
+        .file-input {
+            display: none;
         }
 
-        .upload-zone {
-            border: 2px dashed var(--primary);
-            border-radius: 0.5rem;
-            padding: 2rem;
+        .file-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a166ab 100%);
+            color: white;
+            border-radius: 50px;
             cursor: pointer;
-            margin-bottom: 1rem;
             transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
         }
 
-        .upload-zone:hover {
-            border-color: var(--secondary);
-            background: rgba(99, 102, 241, 0.05);
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
         }
 
-        .upload-zone.dragover {
-            border-color: var(--secondary);
-            background: rgba(99, 102, 241, 0.1);
+        .flashcards-container {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            padding: 1rem;
         }
 
         .flashcard {
-            background: white;
-            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            min-height: 300px;
-            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
+            min-height: 200px;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            animation: fadeIn 0.5s ease;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
         }
 
-        .flashcard-content {
-            flex-grow: 1;
-            margin-bottom: 1rem;
+        .flashcard:hover {
+            transform: translateY(-5px) rotate(1deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
         }
 
-        .question {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-dark);
+        .flashcard.flipped {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .question, .answer {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            font-weight: 500;
+            text-align: center;
         }
 
         .answer {
-            font-size: 1.2rem;
-            padding: 1rem;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 0.5rem;
-            margin-top: 1rem;
             display: none;
-            animation: fadeIn 0.3s ease;
+            color: #2d3436;
         }
 
-        .answer.show {
-            display: block;
-        }
-
-        .controls {
+        .card-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
+        .flashcard:hover .card-actions {
+            opacity: 1;
+        }
+
+        .edit-btn, .delete-btn {
             border: none;
-            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
             cursor: pointer;
-            font-weight: 600;
+            padding: 8px;
+            border-radius: 12px;
             transition: all 0.3s ease;
-            flex: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-primary {
-            background: var(--gradient);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: white;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .progress {
-            text-align: center;
-            color: #666;
-            margin-bottom: 1rem;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .edit-btn:hover, .delete-btn:hover {
+            transform: scale(1.1);
         }
 
         .loading {
@@ -182,211 +147,238 @@
             padding: 2rem;
         }
 
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
+        .loading::after {
+            content: '';
+            display: inline-block;
             width: 40px;
             height: 40px;
-            margin: 0 auto;
-            border: 4px solid rgba(99, 102, 241, 0.1);
-            border-left-color: var(--primary);
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6c5ce7;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.8rem 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            resize: vertical;
+            font-size: 1rem;
+            font-family: 'Quicksand', sans-serif;
+            transition: border-color 0.3s ease;
+            min-height: 100px;
+        }
+
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a166ab 100%);
+            color: white;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .cancel-btn {
+            background: #f0f2f5;
+            color: #2d3436;
+        }
+
+        .cancel-btn:hover {
+            background: #e0e0e0;
+        }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .upload-section h1 {
+                font-size: 2rem;
+            }
+
+            .flashcard {
+                min-height: 180px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">PDF Flashcards</h1>
-        
-        <div class="upload-container">
-            <div class="upload-zone" id="uploadZone">
-                <p>Drop your PDF here or click to upload</p>
-                <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+        <div class="upload-section">
+            <h1>✨ PDF to Flashcards</h1>
+            <div class="file-input-container">
+                <input type="file" id="pdfInput" class="file-input" accept=".pdf">
+                <label for="pdfInput" class="file-label">
+                    <i class="fas fa-file-upload"></i> Choose PDF File
+                </label>
             </div>
         </div>
-
-        <div id="error" class="error" style="display: none;"></div>
         
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Generating questions...</p>
-        </div>
+        <div class="loading"></div>
+        <div class="flashcards-container" id="flashcardsContainer"></div>
+    </div>
 
-        <div id="flashcardContainer" style="display: none;">
-            <div class="progress">
-                Card <span id="currentCard">1</span> of <span id="totalCards">0</span>
-            </div>
-            
-            <div class="flashcard">
-                <div class="flashcard-content">
-                    <div class="question" id="question"></div>
-                    <div class="answer" id="answer"></div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-secondary" id="prevBtn" disabled>Previous</button>
-                    <button class="btn btn-primary" id="toggleAnswer">Show Answer</button>
-                    <button class="btn btn-secondary" id="nextBtn" disabled>Next</button>
-                </div>
+    <div class="edit-modal" id="editModal">
+        <div class="modal-content">
+            <textarea id="questionInput" placeholder="Enter your question..."></textarea>
+            <textarea id="answerInput" placeholder="Enter your answer..."></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn" onclick="closeEditModal()">Cancel</button>
+                <button class="modal-btn save-btn" onclick="saveEdit()">Save Changes</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentIndex = 0;
-        let questions = [];
+        let flashcards = [];
+        let currentEditIndex = -1;
 
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
-        const errorDiv = document.getElementById('error');
-        const loadingDiv = document.getElementById('loading');
-        const flashcardContainer = document.getElementById('flashcardContainer');
-        const questionElement = document.getElementById('question');
-        const answerElement = document.getElementById('answer');
-        const currentCardElement = document.getElementById('currentCard');
-        const totalCardsElement = document.getElementById('totalCards');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const toggleAnswerBtn = document.getElementById('toggleAnswer');
-
-        // Upload zone functionality
-        uploadZone.addEventListener('click', () => fileInput.click());
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-        });
-
-        fileInput.addEventListener('change', (e) => {
+        document.getElementById('pdfInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
+            if (!file) return;
 
-        async function handleFile(file) {
-            if (!file.name.endsWith('.pdf')) {
-                showError('Please upload a PDF file');
-                return;
-            }
+            const loading = document.querySelector('.loading');
+            loading.style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', file);  // Changed to 'file' to match FastAPI parameter
+
+            function deleteCard(index) {
+                // Remove the card from the flashcards array
+                flashcards.splice(index, 1);
+
+                // Re-render the flashcards to update the display
+                renderFlashcards();
+}
+
 
             try {
-                showLoading();
-                hideError();
-
+                // Updated to match the FastAPI endpoint
                 const response = await fetch('http://localhost:8000/upload', {
                     method: 'POST',
                     body: formData
                 });
 
+                if (!response.ok) throw new Error('Failed to convert PDF');
+
                 const data = await response.json();
                 
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
+                // Transform the backend response format to match our flashcard structure
+                flashcards = data.questions.map(([question, answer]) => ({
+                    question: question,
+                    answer: answer
+                }));
 
-                questions = data.questions;
-                currentIndex = 0;
-                
-                if (questions.length > 0) {
-                    showFlashcards();
-                    updateCard();
-                } else {
-                    showError('No questions were generated from the PDF');
-                }
+                renderFlashcards();
             } catch (error) {
-                showError('Failed to process the PDF. Please try again.');
+                alert('Error converting PDF: ' + error.message);
             } finally {
-                hideLoading();
-            }
-        }
-
-        function updateCard() {
-            questionElement.textContent = questions[currentIndex][0];
-            answerElement.textContent = questions[currentIndex][1];
-            currentCardElement.textContent = currentIndex + 1;
-            totalCardsElement.textContent = questions.length;
-            
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex === questions.length - 1;
-            
-            answerElement.classList.remove('show');
-            toggleAnswerBtn.textContent = 'Show Answer';
-        }
-
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCard();
+                loading.style.display = 'none';
             }
         });
 
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < questions.length - 1) {
-                currentIndex++;
-                updateCard();
+        function renderFlashcards() {
+            const container = document.getElementById('flashcardsContainer');
+            container.innerHTML = '';
+
+            if (flashcards.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; grid-column: 1 / -1; padding: 2rem;">
+                        <p style="font-size: 1.2rem; color: #666;">No flashcards generated yet. Upload a PDF to get started!</p>
+                    </div>
+                `;
+                return;
             }
-        });
 
-        toggleAnswerBtn.addEventListener('click', () => {
-            answerElement.classList.toggle('show');
-            toggleAnswerBtn.textContent = answerElement.classList.contains('show') ? 'Hide Answer' : 'Show Answer';
-        });
+            flashcards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'flashcard';
+                cardElement.innerHTML = `
+                    <div class="card-actions">
+                        <button class="edit-btn" onclick="editCard(${index})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" onclick="deleteCard(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <p class="question">${card.question}</p>
+                    <p class="answer">${card.answer}</p>
+                `;
 
-        function showError(message) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+                cardElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('edit-btn') && 
+                        !e.target.classList.contains('delete-btn') &&
+                        !e.target.closest('.edit-btn') &&
+                        !e.target.closest('.delete-btn')) {
+                        cardElement.classList.toggle('flipped');
+                        const question = cardElement.querySelector('.question');
+                        const answer = cardElement.querySelector('.answer');
+                        if (cardElement.classList.contains('flipped')) {
+                            question.style.display = 'none';
+                            answer.style.display = 'block';
+                        } else {
+                            question.style.display = 'block';
+                            answer.style.display = 'none';
+                        }
+                    }
+                });
+
+                container.appendChild(cardElement);
+            });
         }
 
-        function hideError() {
-            errorDiv.style.display = 'none';
-        }
-
-        function showLoading() {
-            loadingDiv.classList.add('show');
-        }
-
-        function hideLoading() {
-            loadingDiv.classList.remove('show');
-        }
-
-        function showFlashcards() {
-            flashcardContainer.style.display = 'block';
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (!questions.length) return;
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    if (!prevBtn.disabled) prevBtn.click();
-                    break;
-                case 'ArrowRight':
-                    if (!nextBtn.disabled) nextBtn.click();
-                    break;
-                case ' ':
-                    e.preventDefault();
-                    toggleAnswerBtn.click();
-                    break;
-            }
-        });
     </script>
 </body>
 </html>
