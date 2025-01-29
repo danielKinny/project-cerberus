@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 question_generation_model = "valhalla/t5-base-qg-hl"
-answering_pipeline = pipeline("question-answering", model="deepset/roberta-large-squad2")
+answering_pipeline = pipeline("question-answering", model="deepset/roberta-base-squad2")
 tokenizer = T5Tokenizer.from_pretrained(question_generation_model)
 model = T5ForConditionalGeneration.from_pretrained(question_generation_model)
 
@@ -43,14 +43,14 @@ async def upload_file(file: UploadFile = File(...)):
                 outputs = model.generate(
                     chunk_tensor['input_ids'],
                     max_length=64,
-                    num_return_sequences=3,
+                    num_return_sequences=2,
                     do_sample=True,
-                    top_k=50,
+                    top_k=20,
                     top_p=0.9,
-                    temperature=1, 
+                    temperature=0.5, 
                     )
                 
-                print(f"Chunk {i} has been processed out of {len(chunks) }...")
+                print(f"Chunk {i+1} has been processed out of {len(chunks) }...")
 
                 for output in outputs:
                     question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')

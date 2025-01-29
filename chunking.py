@@ -10,6 +10,7 @@ def chunk_text(text):
     for sentence in split_text:
         if len(sentence) + len(chunk) >= MAX_CHUNK_LENGTH:
             chunks.append(chunk)
+            print( len(chunk) )
             chunk = sentence
         else:
             chunk += sentence
