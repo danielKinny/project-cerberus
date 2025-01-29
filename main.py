@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
+from transformers import AutoTokenizer, AutoModelWithLMHead, pipeline
 from pdfParser import cleanText, extractText
 from chunking import chunk_text
 import torch
@@ -17,10 +17,10 @@ app.add_middleware(
      allow_headers=["*"],
 )
 
-question_generation_model = "valhalla/t5-base-qg-hl"
-answering_pipeline = pipeline("question-answering", model="deepset/roberta-base-squad2")
-tokenizer = T5Tokenizer.from_pretrained(question_generation_model)
-model = T5ForConditionalGeneration.from_pretrained(question_generation_model)
+question_generation_model = "mrm8488/t5-base-finetuned-question-generation-ap"
+answering_pipeline = pipeline("question-answering", model="deepset/roberta-large-squad2")
+tokenizer = AutoTokenizer.from_pretrained(question_generation_model)
+model = AutoModelWithLMHead.from_pretrained(question_generation_model)
 
 @app.post("/upload")
 
@@ -38,25 +38,39 @@ async def upload_file(file: UploadFile = File(...)):
             chunks = chunk_text(cleaned_text)     
 
             for i,chunk in enumerate(chunks):
-                chunk_tensor = tokenizer(f"context:{chunk}", max_length=512, truncation=True, padding=True, return_tensors="pt")
+                context_window = " ".join(chunks[ max(0, i-1) : min(i+2, len(chunks) ) ] )
+                formatted_text = chunk.strip().replace('\n',' ')
+                chunk_tensor = tokenizer(f"answer:{formatted_text} context:{formatted_text}", max_length=512, truncation=True, padding=True, return_tensors="pt")
 
                 outputs = model.generate(
                     chunk_tensor['input_ids'],
-                    max_length=64,
-                    num_return_sequences=2,
+                    max_length=128,
+                    num_return_sequences=1,
                     do_sample=True,
-                    top_k=20,
-                    top_p=0.9,
-                    temperature=0.5, 
+                    top_k=10,
+                    top_p=0.95,
+                    temperature=0.7,
+                    no_repeat_ngram_size = 2
                     )
                 
                 print(f"Chunk {i+1} has been processed out of {len(chunks) }...")
 
                 for output in outputs:
-                    question = tokenizer.decode(output, skip_special_tokens=True).replace('"\\"','""')
-                    answer = answering_pipeline(question=question, context=chunk)
-                    questions.append([question, answer['answer']])
-                
+
+                    question = tokenizer.decode(output, skip_special_tokens=True)
+                    
+                    answer = answering_pipeline(
+                        question=question,
+                        context=context_window,
+                        max_answer_len=100,
+                        handle_impossible_answers = True,
+                        top_k=5,
+                        )
+                    
+                    for ans in answer:
+                        if ans['score'] > 0.3:
+                            questions.append([question, ans['answer']])
+                    
             return JSONResponse({"questions":questions})
 
         except Exception as e:
