@@ -31,16 +31,17 @@ async def upload_file(file: UploadFile = File(...)):
 
             file_location = f"temp/{file.filename}"
             with open(file_location, "wb") as f:
-                f.write(await file.read())
+                f.write(await file.read()) 
 
             extracted_text = extractText(file_location)
             cleaned_text = " ".join(cleanText(page) for page in extracted_text)
             chunks = chunk_text(cleaned_text)     
 
             for i,chunk in enumerate(chunks):
+
                 context_window = " ".join(chunks[ max(0, i-1) : min(i+2, len(chunks) ) ] )
                 formatted_text = chunk.strip().replace('\n',' ')
-                chunk_tensor = tokenizer(f"answer:{formatted_text} context:{formatted_text}", max_length=512, truncation=True, padding=True, return_tensors="pt")
+                chunk_tensor = tokenizer(f"answer:{formatted_text} context:{context_window}", max_length=512, truncation=True, padding=True, return_tensors="pt")
 
                 outputs = model.generate(
                     chunk_tensor['input_ids'],
@@ -68,7 +69,7 @@ async def upload_file(file: UploadFile = File(...)):
                         )
                     
                     for ans in answer:
-                        if ans['score'] > 0.3:
+                        if ans['score'] > 0.45:
                             questions.append([question, ans['answer']])
                     
             return JSONResponse({"questions":questions})
