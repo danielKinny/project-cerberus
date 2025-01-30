@@ -27,4 +27,7 @@ def chunk_text(text):
         else:
             chunk += " " + sentence
 
+    if chunk:
+        chunks.append(chunk)
+
     return chunks
