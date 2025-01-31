@@ -252,6 +252,260 @@
             }
         }
     </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Flashcards Converter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-section h1 {
+            color: #2d3436;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+
+        .file-input-container {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a166ab 100%);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .flashcards-container {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            padding: 1rem;
+        }
+
+        .flashcard {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .flashcard:hover {
+            transform: translateY(-5px) rotate(1deg);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .flashcard.flipped {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .question, .answer {
+            margin: 0;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .answer {
+            display: none;
+            color: #2d3436;
+        }
+
+        .card-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .flashcard:hover .card-actions {
+            opacity: 1;
+        }
+
+        .edit-btn, .delete-btn {
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-btn:hover, .delete-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6c5ce7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.8rem 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            resize: vertical;
+            font-size: 1rem;
+            font-family: 'Quicksand', sans-serif;
+            transition: border-color 0.3s ease;
+            min-height: 100px;
+        }
+
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #6c5ce7;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a166ab 100%);
+            color: white;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .cancel-btn {
+            background: #f0f2f5;
+            color: #2d3436;
+        }
+
+        .cancel-btn:hover {
+            background: #e0e0e0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .upload-section h1 {
+                font-size: 2rem;
+            }
+
+            .flashcard {
+                min-height: 180px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -274,8 +528,8 @@
             <textarea id="questionInput" placeholder="Enter your question..."></textarea>
             <textarea id="answerInput" placeholder="Enter your answer..."></textarea>
             <div class="modal-buttons">
-                <button class="modal-btn cancel-btn" onclick="closeEditModal()">Cancel</button>
-                <button class="modal-btn save-btn" onclick="saveEdit()">Save Changes</button>
+                <button class="modal-btn cancel-btn" id="cancelEditBtn">Cancel</button>
+                <button class="modal-btn save-btn" id="saveEditBtn">Save Changes</button>
             </div>
         </div>
     </div>
@@ -283,6 +537,39 @@
     <script>
         let flashcards = [];
         let currentEditIndex = -1;
+
+        // Set up event listeners for modal buttons
+        document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+        document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+
+        function deleteCard(index) {
+            flashcards.splice(index, 1);
+            renderFlashcards();
+        }
+
+        function editCard(index) {
+            currentEditIndex = index;
+            const card = flashcards[index];
+            document.getElementById('questionInput').value = card.question;
+            document.getElementById('answerInput').value = card.answer;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditIndex = -1;
+        }
+
+        function saveEdit() {
+            if (currentEditIndex === -1) return;
+            
+            const question = document.getElementById('questionInput').value;
+            const answer = document.getElementById('answerInput').value;
+            
+            flashcards[currentEditIndex] = { question, answer };
+            renderFlashcards();
+            closeEditModal();
+        }
 
         document.getElementById('pdfInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -292,19 +579,9 @@
             loading.style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', file);  // Changed to 'file' to match FastAPI parameter
-
-            function deleteCard(index) {
-                // Remove the card from the flashcards array
-                flashcards.splice(index, 1);
-
-                // Re-render the flashcards to update the display
-                renderFlashcards();
-}
-
+            formData.append('file', file);
 
             try {
-                // Updated to match the FastAPI endpoint
                 const response = await fetch('http://localhost:8000/upload', {
                     method: 'POST',
                     body: formData
@@ -313,8 +590,6 @@
                 if (!response.ok) throw new Error('Failed to convert PDF');
 
                 const data = await response.json();
-                
-                // Transform the backend response format to match our flashcard structure
                 flashcards = data.questions.map(([question, answer]) => ({
                     question: question,
                     answer: answer
@@ -346,10 +621,10 @@
                 cardElement.className = 'flashcard';
                 cardElement.innerHTML = `
                     <div class="card-actions">
-                        <button class="edit-btn" onclick="editCard(${index})">
+                        <button class="edit-btn" data-index="${index}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="delete-btn" onclick="deleteCard(${index})">
+                        <button class="delete-btn" data-index="${index}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -357,11 +632,23 @@
                     <p class="answer">${card.answer}</p>
                 `;
 
+                // Add event listeners for edit and delete buttons
+                const editBtn = cardElement.querySelector('.edit-btn');
+                const deleteBtn = cardElement.querySelector('.delete-btn');
+                
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editCard(index);
+                });
+                
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteCard(index);
+                });
+
+                // Card flip functionality
                 cardElement.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('edit-btn') && 
-                        !e.target.classList.contains('delete-btn') &&
-                        !e.target.closest('.edit-btn') &&
-                        !e.target.closest('.delete-btn')) {
+                    if (!e.target.closest('.card-actions')) {
                         cardElement.classList.toggle('flipped');
                         const question = cardElement.querySelector('.question');
                         const answer = cardElement.querySelector('.answer');
@@ -378,7 +665,6 @@
                 container.appendChild(cardElement);
             });
         }
-
     </script>
 </body>
 </html>
