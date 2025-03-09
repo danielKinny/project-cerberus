@@ -9,6 +9,7 @@ import torch
 import logging
 from typing import List, Tuple
 import os
+import PyPDF2
 
 app = FastAPI()
 
@@ -73,9 +74,6 @@ async def upload_file(file: UploadFile = File(...)) -> JSONResponse:
     try:
         file_location = save_uploaded_file(file)
         extracted_text = extractText(file_location)
-        if not extracted_text:
-            raise ValueError("Failed to extract text from the uploaded file.")
-        
         cleaned_text = " ".join(cleanText(page) for page in extracted_text)
         if not cleaned_text.strip():
             raise ValueError("The extracted text is empty after cleaning.")
@@ -85,6 +83,9 @@ async def upload_file(file: UploadFile = File(...)) -> JSONResponse:
 
         return JSONResponse({"questions": questions})
 
+    except ValueError as e:
+        logging.error(f"Error processing file: {e}")
+        return JSONResponse({"error": str(e)}, status_code=400)
     except Exception as e:
         logging.error(f"Error processing file: {e}")
         return JSONResponse({"error": str(e)}, status_code=500)
