@@ -1,15 +1,9 @@
 from pdfParser import cleanText, extractText
 import nltk
-import ssl
+import os
 
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
-nltk.download("punkt_tab")
+# Set the NLTK data path to the directory used during the Docker build process
+nltk.data.path.append(os.getenv('NLTK_DATA', '/usr/local/share/nltk_data'))
 
 from nltk.tokenize import sent_tokenize
 
@@ -22,7 +16,6 @@ def chunk_text(text):
     for sentence in sentences:
         if len(sentence) + len(chunk) >= MAX_CHUNK_LENGTH:
             chunks.append(chunk)
-            print( len(chunk) )
             chunk = sentence
         else:
             chunk += " " + sentence
