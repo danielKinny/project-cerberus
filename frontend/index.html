@@ -146,7 +146,7 @@
                     <p class="answer">${card.answer}</p>
                 `;
 
-                // Add event listeners for edit and delete buttons
+
                 const editBtn = cardElement.querySelector('.edit-btn');
                 const deleteBtn = cardElement.querySelector('.delete-btn');
                 
@@ -160,7 +160,6 @@
                     deleteCard(index);
                 });
 
-                // Card flip functionality
                 cardElement.addEventListener('click', (e) => {
                     if (!e.target.closest('.card-actions')) {
                         cardElement.classList.toggle('flipped');

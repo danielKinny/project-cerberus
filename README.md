@@ -15,57 +15,11 @@ main.py initalises the question generating and answering models, uses chunking.p
 
 **HOW TO RUN IT**:
 
-As of now, there is no file that can directly install the file onto a computer, thus it must be done manually.
+This app has a docker set-up, so it can be accessed if you have docker desktop, by just navigating to the directory and then using 
+docker-compose up --build
+in your terminal.
 
-To clone this repository, git must be installed onto your computer, and it can be cloned by typing git clone <url to this repo>
-
-To run it, your computer must have python 3.12.8, and a corresponding pip module that is also up to date, any newer versions of python wont work because the torch module that is essential to the transformers library is not updated for later versions as of the writing of this document.
-
-after the repo has been cloned or downloaded, it is recommended to first initialise a virtual environment to ensure that the there is no conflict between the pip modules required for the program and the already existing pip modules present on your computer.
-
-to initialise a virtual environment, run these commands on your terminal
-
-python -m venv venv 
-or
-python3 -m venv venv
-
-this should create a .venv folder in your directory.
-
-the actual VM can then be initialised using the command
-
-**on windows**:
-venv/Scripts/activate
-
-**on macos**:
-(source) venv/bin/activate
-
-after the VM is initialised, run
-
-pip install -r requirements.txt
-or
-pip3 install -r requirements.txt
-
-this will install the required modules for the program to run.
-this program is a locally hosted program, so it is needed to manually initialise both the backend and the frontend
-
-open two terminal windows.
-in both terminal windows, type in:
-cd project-cerberus
-this will locate to the project's directory.
-
-in one window, type in:
-cd backend
-uvicorn main:app --reload
-
-in the second window, type in:
-cd frontend
-python3 -m http.server 8080
-or python -m http.server 8080
-
-
-congrats! you have locally hosted the web app. make sure that the backend terminal says that the application startup is complete, and go over to localhost:8080/ and try out the app.
-
--danny
+it will take around 5 minutes to properly start up due to the dependencies being downloaded, once it's properly initialised the frontend can be accessed through http://localhost:8080
 
 
 
