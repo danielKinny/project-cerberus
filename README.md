@@ -1,27 +1,50 @@
-hello! this is a web application that can convert pdf files into flashcards using NLP ( natural language processing )
+# PDF to Flashcards Web Application
 
-**INTRODUCTION**:
-The backend is primarily coded in python, using the FastAPI library to handle API endpoints, as of the last update to this readme file, the backend uses HuggingFaceAPI models to process the text, in particular, the question generator model is mrm8488/t5-base-finetuned-question-generation-ap, and the answer generation model is deepset/roberta-large-squad2.
+## Introduction
+This is a web application that converts PDF files into flashcards using Natural Language Processing (NLP).
 
-The frontend is a simple design coded in basic html and css, the scripting is using JS to handle post and get requests and also add functionality to flip, edit and delete flashcards.
+### Backend
+The backend is primarily coded in Python using the FastAPI library to handle API endpoints. It utilizes Hugging Face API models to process text. As of the last update to this README file, the following models are used:
 
-**HOW IT WORKS**:
+- **Question Generation Model**: `mrm8488/t5-base-finetuned-question-generation-ap`
+- **Answer Generation Model**: `deepset/roberta-large-squad2`
 
-pdfParser.py uses PyPDF2 to extract text directly from the pdf file provided, it also uses the regex library in python to slightly format the text in a way that can be understood by the question generation model later in main.py, it is imported into main.py and uses in the initial asynchronous function that handles the pdf.
+### Frontend
+The frontend is built with basic HTML and CSS, with JavaScript handling:
+- POST and GET requests
+- Functionality for flipping, editing, and deleting flashcards
 
-chunking.py uses the NLTK library to accurately tokenize and split up text to ensure that sentences arent split in half, thus maintaining the integrity of the text provided, it is then intelligently chunked to ensure that each piece doesnt exceed the 512 token limit.
+## How It Works
 
-main.py initalises the question generating and answering models, uses chunking.py and pdfParser.py as utilities to recieve a list of chunks that make up the entire text, the list is iterated through and 3 questions are generated per chunk, as well as answers, only answers with a confidence score of 0.5 or higher are appended to the final questions array to ensure proper questions and answers. the array containing the questions and answers are then return as JSON object to the front end.
+### `pdfParser.py`
+- Uses `PyPDF2` to extract text directly from a provided PDF file.
+- Uses Python's `regex` library to format text for better processing by the question generation model.
+- Imported into `main.py` and utilized in the initial asynchronous function handling PDF input.
 
-**HOW TO RUN IT**:
+### `chunking.py`
+- Uses the `NLTK` library to accurately tokenize and split text to prevent sentence fragmentation.
+- Intelligently chunks text to stay within the **512-token limit** of the NLP models.
 
-This app has a docker set-up, so it can be accessed if you have docker desktop, by just navigating to the directory and then using 
-docker-compose up --build
-in your terminal.
+### `main.py`
+- Initializes the question and answer generation models.
+- Uses `chunking.py` and `pdfParser.py` to process the extracted text.
+- Iterates through the list of text chunks and generates **three questions per chunk**, along with answers.
+- Only answers with a **confidence score of 0.5 or higher** are included in the final output.
+- Returns a JSON object containing the generated questions and answers to the frontend.
 
-it will take around 5 minutes to properly start up due to the dependencies being downloaded, once it's properly initialised the frontend can be accessed through http://localhost:8080
+## How to Run It
 
+### Using Docker
+This application has a Docker setup, making it easy to run with **Docker Desktop**. Follow these steps:
 
-
-
+1. Navigate to the project directory.
+2. Run the following command in the terminal:
+   ```sh
+   docker-compose up --build
+   ```
+3. The setup will take around **5 minutes** to download dependencies and initialize.
+4. Once properly initialized, access the frontend via:
+   ```
+   http://localhost:8080
+   ```
 
